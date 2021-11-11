@@ -1,0 +1,40 @@
+{
+  "name": "riding-turtles-backend",
+  "version": "1.0",
+  "description": "Backend for NFT project \"RidingTurtles\"",
+  "main": "dist/index.js",
+  "scripts": {
+    "prestart": "npm run build",
+    "start": "node dist/index.js",
+    "build": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RidingTurtles-NFT/riding-turtles-backend.git"
+  },
+  "author": "Alexander Maitz & Peter Holzer",
+  "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://github.com/RidingTurtles-NFT/riding-turtles-backend/issues"
+  },
+  "homepage": "https://github.com/RidingTurtles-NFT/riding-turtles-backend#readme",
+  "dependencies": {
+    "aws-sdk": "^2.989.0",
+    "axios": "^0.21.4",
+    "bottleneck": "^2.19.5",
+    "dotenv": "^10.0.0",
+    "form-data": "^4.0.0",
+    "loglevel": "^1.7.1",
+    "sharp": "^0.29.1",
+    "tsc": "^2.0.3",
+    "web3": "^1.5.2"
+  },
+  "devDependencies": {
+    "@types/node": "^16.9.1",
+    "@types/sharp": "^0.29.2",
+    "@types/web3": "^1.2.2",
+    "typescript": "^4.4.3",
+    "@ethereumjs/common": "^2.5.0",
+    "@ethereumjs/tx": "^3.3.2"
+  }
+}
