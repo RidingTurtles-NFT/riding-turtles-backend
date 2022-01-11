@@ -3,30 +3,53 @@ require('dotenv').config();
 import log from "loglevel";
 import Bottleneck from "bottleneck";
 import { addStateTableEntry, getAllStateTableEntries } from "./helper/aws-dynamodb";
-import { setupMintEventListener, getTokenTraits, getNftMintEventsFromBlock, getHighestTokenId } from "./helper/web3-connector";
+import { getTokenTraits, getHighestTokenId, getBlockNumber, getPastMintedEvents } from "./helper/web3-connector";
 import { getTraitImages } from "./helper/image-loader";
 import { composeImages } from "./helper/sharp";
 import { uploadImageToIpfs } from "./helper/infura-ipfs";
 import { createMetaData } from "./helper/metadata-creator";
 import { uploadMetaDataToBucket } from "./helper/aws-s3";
 
-
 log.setDefaultLevel('info');
 let handleMintEventLimited;
+let lastBlockSeen;
 
-function main() {
+async function main() {
   setupLimiter();
-  setupMintEventListener(async (err: any, event: any) => {
-    try {
-      await handleMintEventLimited(err, event);
-    } catch (e) {
-      log.error('error during processing of minting event:', event.returnValues, e);
-    }
-  });
+  lastBlockSeen = await getBlockNumber();
   processMissedMintEvents()
-    .catch(e => {
-      log.error(`missing events processing error:`, e);
-    });
+      .catch(e => {
+        log.error(`missing events processing error:`, e);
+      });
+  await mintedEventsLoop();
+}
+
+async function sleep(s) {
+  return new Promise(resolve => setTimeout(resolve, s * 1000));
+}
+
+async function mintedEventsLoop() {
+  while (true) {
+    try {
+      await sleep(30);
+      const latestBlock = await getBlockNumber(); // get latest block number
+      const pastMintedEvents = await getPastMintedEvents(lastBlockSeen + 1, latestBlock);
+      pastMintedEvents.forEach((ev) => {
+        scheduleMintEventHandling(undefined, ev); // intentionally called without handling promise as never rejected and non-blocking required
+      });
+      lastBlockSeen = latestBlock;
+    } catch (err) {
+      log.error(`error in events loop:`, err);
+    }
+  }
+}
+
+async function scheduleMintEventHandling(err: any, event: any) {
+  try {
+    await handleMintEventLimited(err, event);
+  } catch (e) {
+    log.error('error during processing of minting event:', event.returnValues, e);
+  }
 }
 
 function setupLimiter() {
@@ -56,7 +79,7 @@ async function processMissedMintEvents(): Promise<void> {
     return;
   }
   const allStateTableEntriesAsc = (await getAllStateTableEntries())
-    .sort((a, b) => a.tokenId - b.tokenId);
+      .sort((a, b) => a.tokenId - b.tokenId);
 
   let lastFinishedIndexWithoutGap = -1;
   for (let i = 0; i < allStateTableEntriesAsc.length; i++) {
@@ -72,7 +95,7 @@ async function processMissedMintEvents(): Promise<void> {
   let startFromBlock;
   if (lastFinishedIndexWithoutGap <= -1) {
     // we've not processed any events yet
-    startFromBlock = 0;
+    startFromBlock = 23586065; // this is the block before the first mints were done
   } else if (highestTokenId > allStateTableEntriesAsc[lastFinishedIndexWithoutGap].tokenId) {
     // we've processed some events already but are not up to date with the chain
     startFromBlock = allStateTableEntriesAsc[lastFinishedIndexWithoutGap].blockHeight
@@ -86,7 +109,7 @@ async function processMissedMintEvents(): Promise<void> {
   // roll up all minted events starting from block where the gap occurred
   log.info(`missing events: found a gap, rolling up beginning with block ${startFromBlock}`);
   let missedEventsCount = 0;
-  const pastEvents = await getNftMintEventsFromBlock(startFromBlock);
+  const pastEvents = await getPastMintedEvents(startFromBlock, 'latest');
   for (const pastEvent of pastEvents) {
     const tokenId = parseInt(pastEvent.returnValues.tokenId);
     const alreadyProcessed = allStateTableEntriesAsc.some(ele => ele.tokenId === tokenId);
@@ -138,4 +161,10 @@ async function createAndUploadImageAndMetaData(tokenId: number, traits: number[]
   await uploadMetaDataToBucket(tokenId, metaData);
 }
 
-main();
+main()
+    .then(() => {
+      console.log("exited cleanly");
+    })
+    .catch(err => {
+      console.error(err);
+    });

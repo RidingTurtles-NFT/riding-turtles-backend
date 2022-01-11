@@ -81,6 +81,56 @@ export const ridingTurtleContractAbi = [
       {
         "indexed": false,
         "internalType": "address",
+        "name": "contractAddress",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint16",
+        "name": "externalId",
+        "type": "uint16"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint16",
+        "name": "tokenId",
+        "type": "uint16"
+      }
+    ],
+    "name": "ExternalNftAssigned",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "contractAddress",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint16",
+        "name": "externalId",
+        "type": "uint16"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint16",
+        "name": "tokenId",
+        "type": "uint16"
+      }
+    ],
+    "name": "ExternalNftUnassigned",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "to",
         "type": "address"
       },
@@ -357,6 +407,13 @@ export const ridingTurtleContractAbi = [
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "renounceOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -599,6 +656,68 @@ export const ridingTurtleContractAbi = [
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "externalOperator",
+        "type": "address"
+      }
+    ],
+    "name": "addExternalOperator",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "externalOperator",
+        "type": "address"
+      }
+    ],
+    "name": "removeExternalOperator",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint16",
+        "name": "externalId",
+        "type": "uint16"
+      },
+      {
+        "internalType": "uint16",
+        "name": "tokenId",
+        "type": "uint16"
+      }
+    ],
+    "name": "externalNftAssigned",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint16",
+        "name": "externalId",
+        "type": "uint16"
+      },
+      {
+        "internalType": "uint16",
+        "name": "tokenId",
+        "type": "uint16"
+      }
+    ],
+    "name": "externalNftUnassigned",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "contractURI",
     "outputs": [
@@ -661,6 +780,24 @@ export const ridingTurtleContractAbi = [
       }
     ],
     "name": "ownerMint",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      },
+      {
+        "internalType": "uint8[]",
+        "name": "traits",
+        "type": "uint8[]"
+      }
+    ],
+    "name": "presetMint",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
